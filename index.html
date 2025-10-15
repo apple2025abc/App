@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学号滚动选择器</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .animate-roll {
+                animation: roll 0.1s linear infinite;
+            }
+        }
+        
+        @keyframes roll {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans text-dark">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 标题区域 -->
+        <header class="text-center mb-12 mt-6">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-primary mb-3 text-shadow">
+                学号滚动选择器
+            </h1>
+            <p class="text-gray-600 text-lg">点击开始按钮启动滚动，点击停止按钮选择学号</p>
+        </header>
+        
+        <!-- 主要内容区域 -->
+        <main class="relative">
+            <!-- 学号显示区域 -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-10 overflow-hidden relative">
+                <!-- 装饰元素 -->
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full"></div>
+                <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-secondary/10 rounded-full"></div>
+                
+                <!-- 学号显示窗口 -->
+                <div class="relative z-10">
+                    <div class="h-40 md:h-56 flex items-center justify-center overflow-hidden border-2 border-gray-200 rounded-xl bg-light mb-6">
+                        <div id="idContainer" class="text-center">
+                            <span id="displayedId" class="text-[clamp(3rem,8vw,5rem)] font-bold text-primary transition-all duration-300">
+                                --
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- 控制面板 -->
+                    <div class="flex flex-wrap gap-4 justify-center">
+                        <button id="startBtn" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-1">
+                            <i class="fa fa-play"></i>
+                            <span>开始滚动</span>
+                        </button>
+                        <button id="stopBtn" class="px-8 py-3 bg-accent hover:bg-accent/90 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-1" disabled>
+                            <i class="fa fa-stop"></i>
+                            <span>停止选择</span>
+                        </button>
+                        <button id="resetBtn" class="px-8 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-1">
+                            <i class="fa fa-refresh"></i>
+                            <span>重置</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学号设置区域 -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-6 text-gray-700 flex items-center gap-2">
+                    <i class="fa fa-cog text-primary"></i>
+                    学号设置
+                </h2>
+                
+                <!-- 区间设置 -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-medium mb-4 text-gray-700">3个区间</h3>
+                    
+                    <div id="rangesContainer" class="space-y-4">
+                        <!-- 区间1 -->
+                        <div class="range-item grid grid-cols-1 md:grid-cols-2 gap-4 items-end p-3 border border-gray-200 rounded-lg">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">区间1 - 起始学号</label>
+                                <input type="text" class="start-range w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" value="04250101">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">区间1 - 结束学号</label>
+                                <input type="text" class="end-range w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" value="04250138">
+                            </div>
+                        </div>
+                        
+                        <!-- 区间2 -->
+                        <div class="range-item grid grid-cols-1 md:grid-cols-2 gap-4 items-end p-3 border border-gray-200 rounded-lg">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">区间2 - 起始学号</label>
+                                <input type="text" class="start-range w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" value="04250201">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">区间2 - 结束学号</label>
+                                <input type="text" class="end-range w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" value="04250231">
+                            </div>
+                        </div>
+                        
+                        <!-- 区间3 -->
+                        <div class="range-item grid grid-cols-1 md:grid-cols-2 gap-4 items-end p-3 border border-gray-200 rounded-lg">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">区间3 - 起始学号</label>
+                                <input type="text" class="start-range w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" value="04250501">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">区间3 - 结束学号</label>
+                                <input type="text" class="end-range w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" value="04250534">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 额外学号设置 -->
+                <div>
+                    <h3 class="text-lg font-medium mb-4 text-gray-700">额外学号</h3>
+                    
+                    <div>
+                        <label for="extraIds" class="block text-sm font-medium text-gray-600 mb-1">
+                            额外的独立学号（用逗号分隔）
+                        </label>
+                        <textarea id="extraIds" rows="3" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                  placeholder="例如: 04240208,04250441">04240208,04250441,05251004,05251308,05251315,05252514</textarea>
+                        <p class="text-xs text-gray-500 mt-1">输入不在上述区间内的额外学号，用逗号分隔</p>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex flex-wrap gap-4">
+                    <button id="applySettingsBtn" class="px-6 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-all">
+                        应用设置
+                    </button>
+                    <button id="resetSettingsBtn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                        恢复默认设置
+                    </button>
+                    <span id="settingsMessage" class="ml-3 text-sm text-gray-500"></span>
+                </div>
+            </div>
+            
+            <!-- 历史记录 -->
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+                    <i class="fa fa-history text-primary"></i>
+                    选择历史
+                </h2>
+                <div id="historyContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-h-40 overflow-y-auto p-2">
+                    <p class="col-span-full text-center text-gray-500 italic">暂无记录</p>
+                </div>
+            </div>
+        </main>
+        
+        <!-- 页脚 -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>学号滚动选择器 &copy; 2023</p>
+        </footer>
+    </div>
+    
+    <!-- 结果弹窗 -->
+    <div id="resultModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-trophy text-2xl text-primary"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-2">选中结果</h3>
+                <p class="text-gray-500 mb-6">恭喜以下学号被选中</p>
+                <div id="modalId" class="text-4xl font-bold text-primary mb-6">04250115</div>
+                <button id="closeModalBtn" class="px-6 py-3 bg-primary text-white rounded-full w-full hover:bg-primary/90 transition-all">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const displayedId = document.getElementById('displayedId');
+        const rangesContainer = document.getElementById('rangesContainer');
+        const extraIdsInput = document.getElementById('extraIds');
+        const applySettingsBtn = document.getElementById('applySettingsBtn');
+        const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+        const settingsMessage = document.getElementById('settingsMessage');
+        const historyContainer = document.getElementById('historyContainer');
+        const resultModal = document.getElementById('resultModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalId = document.getElementById('modalId');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        // 变量初始化
+        let isRolling = false;
+        let rollInterval;
+        let availableIds = []; // 所有可用的学号列表
+        let history = [];
+        const STORAGE_KEY = 'studentIdSettings'; // 本地存储键名
+        
+        // 默认设置 - 使用指定的学号区间和额外学号
+        const defaultSettings = {
+            ranges: [
+                { start: "04250101", end: "04250138" },
+                { start: "04250201", end: "04250231" },
+                { start: "04250501", end: "04250534" }
+            ],
+            extraIds: ["04240208", "04250441", "05251004", "05251308", "05251315", "05252514"]
+        };
+        
+        // 从本地存储加载设置
+        function loadSettings() {
+            const savedSettings = localStorage.getItem(STORAGE_KEY);
+            if (savedSettings) {
+                try {
+                    return JSON.parse(savedSettings);
+                } catch (e) {
+                    console.error('Failed to parse saved settings', e);
+                    return defaultSettings;
+                }
+            }
+            return defaultSettings;
+        }
+        
+        // 保存设置到本地存储
+        function saveSettings(settings) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+                return true;
+            } catch (e) {
+                console.error('Failed to save settings', e);
+                return false;
+            }
+        }
+        
+        // 将设置应用到表单
+        function applySettingsToForm(settings) {
+            const rangeItems = document.querySelectorAll('.range-item');
+            
+            // 更新区间设置
+            rangeItems.forEach((item, index) => {
+                if (settings.ranges[index]) {
+                    item.querySelector('.start-range').value = settings.ranges[index].start;
+                    item.querySelector('.end-range').value = settings.ranges[index].end;
+                }
+            });
+            
+            // 更新额外学号
+            extraIdsInput.value = settings.extraIds.join(', ');
+        }
+        
+        // 从表单收集设置
+        function collectSettingsFromForm() {
+            const rangeItems = document.querySelectorAll('.range-item');
+            const ranges = [];
+            
+            // 收集区间设置
+            rangeItems.forEach(item => {
+                const start = item.querySelector('.start-range').value.trim();
+                const end = item.querySelector('.end-range').value.trim();
+                if (start && end) {
+                    ranges.push({ start, end });
+                }
+            });
+            
+            // 收集额外学号
+            const extraIdsText = extraIdsInput.value.trim();
+            let extraIds = [];
+            
+            if (extraIdsText) {
+                // 处理输入，支持逗号分隔
+                extraIds = extraIdsText.split(',').map(id => id.trim()).filter(id => id);
+            }
+            
+            return { ranges, extraIds };
+        }
+        
+        // 生成区间内的所有学号（支持字符串格式的学号）
+        function generateRangeIds(start, end) {
+            const ids = [];
+            
+            // 尝试将学号转换为数字处理
+            const startNum = parseInt(start, 10);
+            const endNum = parseInt(end, 10);
+            
+            if (!isNaN(startNum) && !isNaN(endNum) && start.length === end.length) {
+                // 如果是数字且长度相同，按数字递增处理
+                for (let i = startNum; i <= endNum; i++) {
+                    // 格式化为与原始学号相同长度的字符串
+                    let id = i.toString();
+                    while (id.length < start.length) {
+                        id = '0' + id;
+                    }
+                    ids.push(id);
+                }
+            } else {
+                // 否则直接返回空数组（无法处理非数字区间）
+                console.warn(`无法处理区间 ${start} 到 ${end}，请确保学号为数字格式且长度相同`);
+            }
+            
+            return ids;
+        }
+        
+        // 恢复默认设置
+        function restoreDefaultSettings() {
+            saveSettings(defaultSettings);
+            applySettingsToForm(defaultSettings);
+            applySettings(); // 应用默认设置
+            showSettingsMessage('已恢复默认设置', 'blue');
+        }
+        
+        // 生成随机学号
+        function getRandomId() {
+            if (availableIds.length === 0) {
+                return '--';
+            }
+            const randomIndex = Math.floor(Math.random() * availableIds.length);
+            return availableIds[randomIndex];
+        }
+        
+        // 开始滚动
+        function startRolling() {
+            if (availableIds.length === 0) {
+                showSettingsMessage('请先设置有效的学号', 'red');
+                return;
+            }
+            
+            isRolling = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            stopBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            
+            // 添加滚动动画类
+            displayedId.classList.add('animate-roll');
+            
+            // 开始滚动
+            rollInterval = setInterval(() => {
+                const randomId = getRandomId();
+                displayedId.textContent = randomId;
+            }, 80); // 滚动速度
+        }
+        
+        // 停止滚动
+        function stopRolling() {
+            if (!isRolling) return;
+            
+            isRolling = false;
+            clearInterval(rollInterval);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            stopBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // 移除滚动动画类
+            displayedId.classList.remove('animate-roll');
+            
+            // 添加选中动画
+            displayedId.classList.add('scale-110');
+            setTimeout(() => {
+                displayedId.classList.remove('scale-110');
+            }, 300);
+            
+            // 记录历史
+            const selectedId = displayedId.textContent;
+            addToHistory(selectedId);
+            
+            // 显示结果弹窗
+            showResultModal(selectedId);
+        }
+        
+        // 重置滚动
+        function resetRoller() {
+            isRolling = false;
+            clearInterval(rollInterval);
+            displayedId.textContent = '--';
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            stopBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            displayedId.classList.remove('animate-roll', 'scale-110');
+        }
+        
+        // 应用学号设置
+        function applySettings() {
+            const settings = collectSettingsFromForm();
+            const { ranges, extraIds } = settings;
+            
+            // 验证区间
+            for (let i = 0; i < ranges.length; i++) {
+                const { start, end } = ranges[i];
+                if (!start || !end) {
+                    showSettingsMessage(`区间 ${i+1} 请输入有效的学号`, 'red');
+                    return;
+                }
+                
+                // 验证学号格式是否一致
+                const startNum = parseInt(start, 10);
+                const endNum = parseInt(end, 10);
+                if (isNaN(startNum) || isNaN(endNum) || start.length !== end.length) {
+                    showSettingsMessage(`区间 ${i+1} 学号格式无效，请使用相同长度的数字格式`, 'red');
+                    return;
+                }
+                
+                if (startNum > endNum) {
+                    showSettingsMessage(`区间 ${i+1} 起始学号必须小于结束学号`, 'red');
+                    return;
+                }
+            }
+            
+            // 保存设置到本地存储
+            saveSettings(settings);
+            
+            // 生成所有可用学号
+            availableIds = [];
+            
+            // 添加区间内的学号
+            let rangeCount = 0;
+            ranges.forEach(range => {
+                const rangeIds = generateRangeIds(range.start, range.end);
+                rangeCount += rangeIds.length;
+                availableIds.push(...rangeIds);
+            });
+            
+            // 添加额外的学号
+            availableIds.push(...extraIds);
+            
+            // 去重
+            availableIds = [...new Set(availableIds)];
+            
+            showSettingsMessage(`已应用设置，共 ${ranges.length} 个区间（${rangeCount} 个学号）和 ${extraIds.length} 个额外学号，总计 ${availableIds.length} 个学号`, 'green');
+        }
+        
+        // 显示设置消息
+        function showSettingsMessage(text, color) {
+            settingsMessage.textContent = text;
+            settingsMessage.style.color = color;
+            
+            setTimeout(() => {
+                settingsMessage.textContent = '';
+            }, 3000);
+        }
+        
+        // 添加到历史记录
+        function addToHistory(id) {
+            history.unshift(id); // 添加到开头
+            if (history.length > 20) {
+                history.pop(); // 保持最多20条记录
+            }
+            updateHistoryDisplay();
+        }
+        
+        // 更新历史记录显示
+        function updateHistoryDisplay() {
+            if (history.length === 0) {
+                historyContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 italic">暂无记录</p>';
+                return;
+            }
+            
+            historyContainer.innerHTML = '';
+            history.forEach(id => {
+                const idElement = document.createElement('div');
+                idElement.className = 'bg-gray-100 rounded-lg p-2 text-center text-gray-700';
+                idElement.textContent = id;
+                historyContainer.appendChild(idElement);
+            });
+        }
+        
+        // 显示结果弹窗
+        function showResultModal(id) {
+            modalId.textContent = id;
+            resultModal.classList.remove('hidden');
+            
+            // 触发动画
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        
+        // 关闭结果弹窗
+        function closeResultModal() {
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                resultModal.classList.add('hidden');
+            }, 300);
+        }
+        
+        // 事件监听
+        startBtn.addEventListener('click', startRolling);
+        stopBtn.addEventListener('click', stopRolling);
+        resetBtn.addEventListener('click', resetRoller);
+        applySettingsBtn.addEventListener('click', applySettings);
+        resetSettingsBtn.addEventListener('click', restoreDefaultSettings);
+        closeModalBtn.addEventListener('click', closeResultModal);
+        
+        // 按空格键控制开始/停止
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault(); // 防止页面滚动
+                if (isRolling) {
+                    stopRolling();
+                } else {
+                    startRolling();
+                }
+            }
+        });
+        
+        // 初始化 - 从本地存储加载设置
+        const savedSettings = loadSettings();
+        applySettingsToForm(savedSettings);
+        updateHistoryDisplay();
+        applySettings(); // 应用保存的设置
+    </script>
+</body>
+</html>
+    
